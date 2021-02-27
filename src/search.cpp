@@ -373,8 +373,8 @@ void Thread::search() {
          && !Threads.stop
          && !(Limits.depth && mainThread && rootDepth > Limits.depth))
   {
-      if(((losses.size() >= 6 && std::abs(losses[losses.size()-1] - losses[losses.size()-2]) < 50
-           && std::abs(losses[losses.size()-2] - losses[losses.size()-3])) || nodes > 100000) && !switchToNNUE && Eval::useNNUE) {
+      if(((losses.size() >= 6 && std::abs(losses[losses.size()-1] - losses[losses.size()-2]) < 50)
+      || nodes > 100000) && !switchToNNUE && Eval::useNNUE) {
           rootDepth = 0;
           switchToNNUE = true;
           std::memset(ss-7, 0, 10 * sizeof(Stack));
