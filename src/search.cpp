@@ -367,12 +367,14 @@ void Thread::search() {
   int searchAgainCounter = 0;
   int root_mat = rootPos.non_pawn_material() + 2 * PawnValueMg * rootPos.count<PAWN>();
   switchToNNUE = !(root_mat >= 8000 && root_mat <= 18000) || !Eval::useNNUE;
+  std::vector<double> losses;
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
          && !Threads.stop
          && !(Limits.depth && mainThread && rootDepth > Limits.depth))
   {
-      if(((rootDepth >= 5 && selDepth >= 14) || nodes > 40000) && !switchToNNUE && Eval::useNNUE) {
+      if(((losses.size() >= 6 && std::abs(losses[losses.size()-1] - losses[losses.size()-2]) < 50
+           && std::abs(losses[losses.size()-2] - losses[losses.size()-3])) || nodes > 100000) && !switchToNNUE && Eval::useNNUE) {
           rootDepth = 0;
           switchToNNUE = true;
           std::memset(ss-7, 0, 10 * sizeof(Stack));
@@ -558,6 +560,7 @@ void Thread::search() {
                    Threads.increaseDepth = true;
       }
 
+      losses.push_back(bestValue);
       mainThread->iterValue[iterIdx] = bestValue;
       iterIdx = (iterIdx + 1) & 3;
   }
