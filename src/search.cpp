@@ -372,7 +372,7 @@ void Thread::search() {
          && !Threads.stop
          && !(Limits.depth && mainThread && rootDepth > Limits.depth))
   {
-      if((rootDepth == 11 || nodes > 40000) && !switchToNNUE && Eval::useNNUE) {
+      if(((rootDepth >= 5 && selDepth >= 14) || nodes > 40000) && !switchToNNUE && Eval::useNNUE) {
           rootDepth = 0;
           switchToNNUE = true;
           std::memset(ss-7, 0, 10 * sizeof(Stack));
