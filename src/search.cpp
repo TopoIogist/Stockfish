@@ -365,6 +365,7 @@ void Thread::search() {
                           : -make_score(ct, ct / 2));
 
   int searchAgainCounter = 0;
+  std::vector<RootMove> bestRootMoves;
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -481,6 +482,7 @@ void Thread::search() {
       if (!Threads.stop)
           completedDepth = rootDepth;
 
+      bestRootMoves.push_back(rootMoves[0]);
       if (rootMoves[0].pv[0] != lastBestMove) {
          lastBestMove = rootMoves[0].pv[0];
          lastBestMoveDepth = rootDepth;
@@ -548,6 +550,23 @@ void Thread::search() {
       mainThread->iterValue[iterIdx] = bestValue;
       iterIdx = (iterIdx + 1) & 3;
   }
+
+  if(bestRootMoves.size() >= 10) {
+      Move basemove = bestRootMoves[bestRootMoves.size()-7].pv[0];
+      bool long_seq = true;
+      for(std::size_t j = bestRootMoves.size()-6; j <= bestRootMoves.size() - 2; ++j) {
+          if(bestRootMoves[j].pv[0] != basemove) {
+              long_seq = false;
+              break;
+          }
+      }
+      if(long_seq && bestRootMoves[bestRootMoves.size()-1].pv[0] != basemove) {
+          if(std::abs(bestRootMoves[bestRootMoves.size()-1].score - bestRootMoves[bestRootMoves.size()-2].score) <= 15) {
+              rootMoves[0] = bestRootMoves[bestRootMoves.size()-2];
+          }
+      }
+  }
+
 
   if (!mainThread)
       return;
