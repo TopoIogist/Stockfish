@@ -1079,6 +1079,8 @@ Value Eval::evaluate(const Position& pos) {
           v = adjusted_NNUE();
   }
 
+  v += static_cast<Value>((pos.side_to_move() == WHITE ? -1 : 1) * min(pos.this_thread()->rootDepth,17));
+
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
 
