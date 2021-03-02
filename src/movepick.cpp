@@ -107,9 +107,10 @@ void MovePicker::score() {
                                      +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
                                      +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
                                      + (ply < MAX_LPH ? std::min(4, depth / 3) * (*lowPlyHistory)[ply][from_to(m)] : 0)) ;
-      m.value +=  (pos.capture(m) ? 1 : 0)*(Type & EVASIONS)/ 0x100 * (PieceValue[MG][pos.piece_on(to_sq(m))]
+      int is_capture = (pos.capture(m) ? 1 : 0);
+      m.value +=  is_capture*(Type & EVASIONS)/ 0x100 * (PieceValue[MG][pos.piece_on(to_sq(m))]
                   - Value(type_of(pos.moved_piece(m))));
-      m.value +=  (pos.capture(m) ? 0 : 1)*(Type & EVASIONS)/ 0x100 * ( (*mainHistory)[pos.side_to_move()][from_to(m)]
+      m.value +=  (1-is_capture)*(Type & EVASIONS)/ 0x100 * ( (*mainHistory)[pos.side_to_move()][from_to(m)]
                   + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                   - (1 << 28));
   }
