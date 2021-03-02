@@ -95,32 +95,25 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 /// captures with a good history. Quiets moves are ordered using the histories.
 template<GenType Type>
 void MovePicker::score() {
-
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
-  for (auto& m : *this)
-      if constexpr (Type == CAPTURES)
-          m.value =  int(PieceValue[MG][pos.piece_on(to_sq(m))]) * 6
-                   + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
+  for (auto& m : *this) {
+      m.value = 0;
+      m.value +=  (Type & CAPTURES) *( int(PieceValue[MG][pos.piece_on(to_sq(m))]) * 6
+                     + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))]);
+      m.value +=  (Type & QUIETS)/ 0x10 * ((*mainHistory)[pos.side_to_move()][from_to(m)]
+                                     + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
+                                     +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
+                                     +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
+                                     +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
+                                     + (ply < MAX_LPH ? std::min(4, depth / 3) * (*lowPlyHistory)[ply][from_to(m)] : 0)) ;
+      m.value +=  (pos.capture(m) ? 1 : 0)*(Type & EVASIONS)/ 0x100 * (PieceValue[MG][pos.piece_on(to_sq(m))]
+                  - Value(type_of(pos.moved_piece(m))));
+      m.value +=  (pos.capture(m) ? 0 : 1)*(Type & EVASIONS)/ 0x100 * ( (*mainHistory)[pos.side_to_move()][from_to(m)]
+                  + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
+                  - (1 << 28));
+  }
 
-      else if constexpr (Type == QUIETS)
-          m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                   + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
-                   + (ply < MAX_LPH ? std::min(4, depth / 3) * (*lowPlyHistory)[ply][from_to(m)] : 0);
-
-      else // Type == EVASIONS
-      {
-          if (pos.capture(m))
-              m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
-                       - Value(type_of(pos.moved_piece(m)));
-          else
-              m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                       + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                       - (1 << 28);
-      }
 }
 
 /// MovePicker::select() returns the next move satisfying a predicate function.
