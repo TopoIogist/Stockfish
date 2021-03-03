@@ -533,7 +533,7 @@ namespace {
     constexpr Bitboard Camp = (Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
                                            : AllSquares ^ Rank1BB ^ Rank2BB ^ Rank3BB);
 
-    Bitboard weak, b1, b2, b3, safe, unsafeChecks = 0;
+    Bitboard weak, b1, b2, b3, safe, unsafeRookChecks = 0, unsafeBishopKnightChecks = 0;
     Bitboard rookChecks, queenChecks, bishopChecks, knightChecks;
     int kingDanger = 0;
     const Square ksq = pos.square<KING>(Us);
@@ -558,7 +558,7 @@ namespace {
     if (rookChecks)
         kingDanger += SafeCheck[ROOK][more_than_one(rookChecks)];
     else
-        unsafeChecks |= b1 & attackedBy[Them][ROOK];
+        unsafeRookChecks |= b1 & attackedBy[Them][ROOK];
 
     // Enemy queen safe checks: count them only if the checks are from squares from
     // which opponent cannot give a rook check, because rook checks are more valuable.
@@ -575,14 +575,14 @@ namespace {
         kingDanger += SafeCheck[BISHOP][more_than_one(bishopChecks)];
 
     else
-        unsafeChecks |= b2 & attackedBy[Them][BISHOP];
+        unsafeBishopKnightChecks |= b2 & attackedBy[Them][BISHOP];
 
     // Enemy knights checks
     knightChecks = attacks_bb<KNIGHT>(ksq) & attackedBy[Them][KNIGHT];
     if (knightChecks & safe)
         kingDanger += SafeCheck[KNIGHT][more_than_one(knightChecks & safe)];
     else
-        unsafeChecks |= knightChecks;
+        unsafeBishopKnightChecks |= knightChecks;
 
     // Find the squares that opponent attacks in our king flank, the squares
     // which they attack twice in that flank, and the squares that we defend.
@@ -595,7 +595,8 @@ namespace {
 
     kingDanger +=        kingAttackersCount[Them] * kingAttackersWeight[Them] // (~10 Elo)
                  + 183 * popcount(kingRing[Us] & weak)                        // (~15 Elo)
-                 + 148 * popcount(unsafeChecks)                               // (~4 Elo)
+                 + 175 * popcount(unsafeRookChecks)
+                 + 166 * popcount(unsafeBishopKnightChecks)
                  +  98 * popcount(pos.blockers_for_king(Us))                  // (~2 Elo)
                  +  69 * kingAttacksCount[Them]                               // (~0.5 Elo)
                  +   3 * kingFlankAttack * kingFlankAttack / 8                // (~0.5 Elo)
