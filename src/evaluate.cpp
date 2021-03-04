@@ -595,8 +595,8 @@ namespace {
 
     kingDanger +=        kingAttackersCount[Them] * kingAttackersWeight[Them] // (~10 Elo)
                  + 183 * popcount(kingRing[Us] & weak)                        // (~15 Elo)
-                 + 193 * popcount(unsafeRookChecks)
-                 + 103 * popcount(unsafeBishopKnightChecks)
+                 + 188 * popcount(unsafeRookChecks)
+                 + 174 * popcount(unsafeBishopKnightChecks)
                  +  98 * popcount(pos.blockers_for_king(Us))                  // (~2 Elo)
                  +  69 * kingAttacksCount[Them]                               // (~0.5 Elo)
                  +   3 * kingFlankAttack * kingFlankAttack / 8                // (~0.5 Elo)
