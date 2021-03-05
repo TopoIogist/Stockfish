@@ -557,8 +557,6 @@ namespace {
     rookChecks = b1 & attackedBy[Them][ROOK] & safe;
     if (rookChecks)
         kingDanger += SafeCheck[ROOK][more_than_one(rookChecks)];
-    else
-        unsafeRookChecks |= b1 & attackedBy[Them][ROOK];
 
     // Enemy queen safe checks: count them only if the checks are from squares from
     // which opponent cannot give a rook check, because rook checks are more valuable.
@@ -573,7 +571,6 @@ namespace {
                   & ~queenChecks;
     if (bishopChecks)
         kingDanger += SafeCheck[BISHOP][more_than_one(bishopChecks)];
-
     else
         unsafeBishopKnightChecks |= b2 & attackedBy[Them][BISHOP];
 
@@ -583,6 +580,9 @@ namespace {
         kingDanger += SafeCheck[KNIGHT][more_than_one(knightChecks & safe)];
     else
         unsafeBishopKnightChecks |= knightChecks;
+
+    if (!rookChecks)
+        unsafeRookChecks |= ~unsafeBishopKnightChecks & b1 & attackedBy[Them][ROOK];
 
     // Find the squares that opponent attacks in our king flank, the squares
     // which they attack twice in that flank, and the squares that we defend.
@@ -595,8 +595,8 @@ namespace {
 
     kingDanger +=        kingAttackersCount[Them] * kingAttackersWeight[Them] // (~10 Elo)
                  + 183 * popcount(kingRing[Us] & weak)                        // (~15 Elo)
-                 + 188 * popcount(unsafeRookChecks)
-                 + 174 * popcount(unsafeBishopKnightChecks)
+                 +  90 * popcount(unsafeRookChecks)
+                 +  83 * popcount(unsafeBishopKnightChecks)
                  +  98 * popcount(pos.blockers_for_king(Us))                  // (~2 Elo)
                  +  69 * kingAttacksCount[Them]                               // (~0.5 Elo)
                  +   3 * kingFlankAttack * kingFlankAttack / 8                // (~0.5 Elo)
