@@ -605,7 +605,7 @@ namespace {
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool formerPv, givesCheck, improving, didLMR, priorCapture;
-    bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
+    bool captureOrPromotion, queenPromotion, doFullDepthSearch, moveCountPruning,
          ttCapture, singularQuietLMR;
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
@@ -1041,6 +1041,7 @@ moves_loop: // When in check, search starts from here
 
       extension = 0;
       captureOrPromotion = pos.capture_or_promotion(move);
+      queenPromotion = pos.queen_promotion(move);
       movedPiece = pos.moved_piece(move);
       givesCheck = pos.gives_check(move);
 
@@ -1070,7 +1071,7 @@ moves_loop: // When in check, search starts from here
               || givesCheck)
           {
               // Capture history based pruning when the move doesn't give check
-              if (   !givesCheck
+              if (   !givesCheck && !queenPromotion
                   && lmrDepth < 1
                   && captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
                   continue;
