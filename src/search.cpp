@@ -1229,7 +1229,7 @@ moves_loop: // When in check, search starts from here
           if (captureOrPromotion)
           {
               // Unless giving check, this capture is likely bad
-              if (   !givesCheck
+              if (   !givesCheck && !queenPromotion
                   && ss->staticEval + PieceValue[EG][pos.captured_piece()] + 210 * depth <= alpha)
                   r++;
           }
