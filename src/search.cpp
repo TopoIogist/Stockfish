@@ -1228,8 +1228,9 @@ moves_loop: // When in check, search starts from here
           {
               // Unless giving check, this capture is likely bad
               if (   !givesCheck
-                  && ss->staticEval + PieceValue[EG][pos.captured_piece()] + 210 * depth <= alpha)
-                  r++;
+                  && ss->staticEval + PieceValue[EG][pos.captured_piece()] + 210 * depth <= alpha){
+                  r += 1 + (type_of(movedPiece) == PAWN);
+              }
           }
           else
           {
