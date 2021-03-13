@@ -1075,7 +1075,7 @@ bool Position::see_ge(Move m, Value threshold) const {
       return false;
 
   swap = PieceValue[MG][piece_on(from)] - swap;
-  if (swap <= KnightValueMg - BishopValueMg)
+  if (swap <= BishopValueMg - KnightValueMg)
       return true;
 
   Bitboard occupied = pieces() ^ from ^ to;
