@@ -1062,6 +1062,7 @@ Key Position::key_after(Move m) const {
 bool Position::see_ge(Move m, Value threshold) const {
 
   assert(is_ok(m));
+  static_assert(KnightValueMg <= BishopValueMg);
 
   // Only deal with normal moves, assume others pass a simple SEE
   if (type_of(m) != NORMAL)
@@ -1070,11 +1071,11 @@ bool Position::see_ge(Move m, Value threshold) const {
   Square from = from_sq(m), to = to_sq(m);
 
   int swap = PieceValue[MG][piece_on(to)] - threshold;
-  if (swap < 0)
+  if (swap < KnightValueMg - BishopValueMg)
       return false;
 
   swap = PieceValue[MG][piece_on(from)] - swap;
-  if (swap <= 0)
+  if (swap <= KnightValueMg - BishopValueMg)
       return true;
 
   Bitboard occupied = pieces() ^ from ^ to;
