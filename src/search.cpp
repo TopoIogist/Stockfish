@@ -605,7 +605,7 @@ namespace {
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool formerPv, givesCheck, improving, didLMR, priorCapture;
-    bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
+    bool captureOrPromotion, underPromotion, doFullDepthSearch, moveCountPruning,
          ttCapture, singularQuietLMR;
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
@@ -930,6 +930,7 @@ namespace {
                 assert(depth >= 5);
 
                 captureOrPromotion = true;
+                underPromotion = pos.underpromotion(move);
                 probCutCount++;
 
                 ss->currentMove = move;
@@ -1041,6 +1042,7 @@ moves_loop: // When in check, search starts from here
 
       extension = 0;
       captureOrPromotion = pos.capture_or_promotion(move);
+      underPromotion = pos.underpromotion(move);
       movedPiece = pos.moved_piece(move);
       givesCheck = pos.gives_check(move);
 
@@ -1219,6 +1221,9 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if opponent's move count is high (~5 Elo)
           if ((ss-1)->moveCount > 13)
               r--;
+
+          if (underPromotion && !givesCheck)
+              r++;
 
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
           if (singularQuietLMR)
