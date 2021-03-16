@@ -626,6 +626,56 @@ bool Position::pseudo_legal(const Move m) const {
   return true;
 }
 
+int Position::check_count(Move m) const {
+    assert(is_ok(m));
+    assert(color_of(moved_piece(m)) == sideToMove);
+
+    Square from = from_sq(m);
+    Square to = to_sq(m);
+
+    int check_count = 0;
+    if (check_squares(type_of(piece_on(from))) & to)
+        check_count += 1;
+
+    // Is there a discovered check?
+    if (   (blockers_for_king(~sideToMove) & from)
+           && !aligned(from, to, square<KING>(~sideToMove)))
+        check_count += 1;
+
+    switch (type_of(m))
+    {
+        case NORMAL:
+            return check_count;
+
+        case PROMOTION:
+            if(attacks_bb(promotion_type(m), to, pieces() ^ from) & square<KING>(~sideToMove))
+                return check_count + 1;
+            return check_count;
+
+            // The double-pushed pawn blocked a check? En Passant will remove the blocker.
+            // The only discovery check that wasn't handle is through capsq and fromsq
+            // So the King must be in the same rank as fromsq to consider this possibility.
+            // st->previous->blockersForKing consider capsq as empty.
+        case EN_PASSANT:
+            if(st->previous->checkersBB
+                   || (   rank_of(square<KING>(~sideToMove)) == rank_of(from)
+                          && st->previous->blockersForKing[~sideToMove] & from))
+                return check_count + 1;
+            return check_count;
+
+        default: //CASTLING
+        {
+            // Castling is encoded as 'king captures the rook'
+            Square ksq = square<KING>(~sideToMove);
+            Square rto = relative_square(sideToMove, to > from ? SQ_F1 : SQ_D1);
+
+            if ((attacks_bb<ROOK>(rto) & ksq)
+                     && (attacks_bb<ROOK>(rto, pieces() ^ from ^ to) & ksq))
+                return check_count+1;
+            return check_count;
+        }
+    }
+}
 
 /// Position::gives_check() tests whether a pseudo-legal move gives a check
 

@@ -608,7 +608,7 @@ namespace {
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
          ttCapture, singularQuietLMR;
     Piece movedPiece;
-    int moveCount, captureCount, quietCount;
+    int moveCount, captureCount, quietCount, checkCount;
 
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
@@ -1042,8 +1042,9 @@ moves_loop: // When in check, search starts from here
       extension = 0;
       captureOrPromotion = pos.capture_or_promotion(move);
       movedPiece = pos.moved_piece(move);
-      givesCheck = pos.gives_check(move);
-      givesDoubleCheck = more_than_one(pos.checkers());
+      checkCount = pos.check_count(move);
+      givesCheck = checkCount > 0;
+      givesDoubleCheck = checkCount > 1;
 
       // Indicate PvNodes that will probably fail low if node was searched with non-PV search
       // at depth equal or greater to current depth and result of this search was far below alpha
@@ -1057,7 +1058,7 @@ moves_loop: // When in check, search starts from here
       newDepth = depth - 1;
 
       // Step 13. Pruning at shallow depth (~200 Elo)
-      if (  !rootNode && !givesDoubleCheck
+      if (  !rootNode
           && pos.non_pawn_material(us)
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
@@ -1077,7 +1078,7 @@ moves_loop: // When in check, search starts from here
                   continue;
 
               // SEE based pruning
-              if (!pos.see_ge(move, Value(-218) * depth)) // (~25 Elo)
+              if (!givesDoubleCheck && !pos.see_ge(move, Value(-218) * depth)) // (~25 Elo)
                   continue;
           }
           else
