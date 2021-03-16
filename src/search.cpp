@@ -1163,7 +1163,7 @@ moves_loop: // When in check, search starts from here
                && pos.non_pawn_material() <= 2 * RookValueMg)
           extension = 1;
 
-      else if (queenPromotion)
+      else if (queenPromotion && !popcount(pos.attackers_to(to_sq(move)) & pos.pieces(~us)))
           extension = 1;
 
       // Add extension to new depth
