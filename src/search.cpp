@@ -604,7 +604,7 @@ namespace {
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
-    bool formerPv, givesCheck, improving, didLMR, priorCapture;
+    bool formerPv, givesCheck, givesDoubleCheck, improving, didLMR, priorCapture;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
          ttCapture, singularQuietLMR;
     Piece movedPiece;
@@ -1043,6 +1043,7 @@ moves_loop: // When in check, search starts from here
       captureOrPromotion = pos.capture_or_promotion(move);
       movedPiece = pos.moved_piece(move);
       givesCheck = pos.gives_check(move);
+      givesDoubleCheck = more_than_one(pos.checkers());
 
       // Indicate PvNodes that will probably fail low if node was searched with non-PV search
       // at depth equal or greater to current depth and result of this search was far below alpha
@@ -1056,7 +1057,7 @@ moves_loop: // When in check, search starts from here
       newDepth = depth - 1;
 
       // Step 13. Pruning at shallow depth (~200 Elo)
-      if (  !rootNode
+      if (  !rootNode && !givesDoubleCheck
           && pos.non_pawn_material(us)
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
