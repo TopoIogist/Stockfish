@@ -1068,7 +1068,7 @@ moves_loop: // When in check, search starts from here
           int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), 0);
 
           if (   captureOrPromotion
-              || givesCheck)
+              || givesCheck || queenTempo)
           {
               // Capture history based pruning when the move doesn't give check
               if (   !givesCheck
@@ -1237,10 +1237,6 @@ moves_loop: // When in check, search starts from here
               // Increase reduction if ttMove is a capture (~5 Elo)
               if (ttCapture)
                   r++;
-
-              // Decrease reduction if its a tempo move on queen
-              if (queenTempo)
-                  --r;
 
               // Increase reduction at root if failing high
               r += rootNode ? thisThread->failedHighCnt * thisThread->failedHighCnt * moveCount / 512 : 0;
