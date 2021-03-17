@@ -627,6 +627,20 @@ bool Position::pseudo_legal(const Move m) const {
 }
 
 
+bool Position::attacks_queen(Move m) const {
+    Color us = sideToMove;
+    Square from = from_sq(m), to = to_sq(m);
+    // currently the case with >1 queen is ignored
+    if (count<QUEEN>(~us) != 1
+        || type_of(moved_piece(m)) == PAWN) return false;
+    if (type_of(moved_piece(m)) != ROOK && type_of(moved_piece(m)) != BISHOP
+       && type_of(moved_piece(m)) != KNIGHT) return false;
+    if (!(attackers_to(to, pieces() ^ from) & pieces(~us)))
+        return false;
+    Square queenSquare = square<QUEEN>(~us);
+    return (attacks_bb( type_of(moved_piece(m)), to, pieces() ^ from ) & queenSquare);
+}
+
 /// Position::gives_check() tests whether a pseudo-legal move gives a check
 
 bool Position::gives_check(Move m) const {
