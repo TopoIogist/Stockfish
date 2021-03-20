@@ -604,7 +604,7 @@ namespace {
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
-    bool formerPv, givesCheck, improving, didLMR, priorCapture;
+    bool formerPv, givesCheck, improving, didLMR, priorCapture, pastOptTime;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
          ttCapture, singularQuietLMR;
     Piece movedPiece;
@@ -623,6 +623,7 @@ namespace {
     // Check for the available remaining time
     if (thisThread == Threads.main())
         static_cast<MainThread*>(thisThread)->check_time();
+    pastOptTime = Limits.use_time_management() && Time.elapsed() > Time.optimum();
 
     // Used to send selDepth info to GUI (selDepth counts from 1, ply from 0)
     if (PvNode && thisThread->selDepth < ss->ply + 1)
@@ -831,6 +832,7 @@ namespace {
     improving =  (ss-2)->staticEval == VALUE_NONE
                ? ss->staticEval > (ss-4)->staticEval || (ss-4)->staticEval == VALUE_NONE
                : ss->staticEval > (ss-2)->staticEval;
+    if (pastOptTime) improving = true;
 
     // Step 7. Futility pruning: child node (~50 Elo)
     if (   !PvNode
@@ -1273,6 +1275,7 @@ moves_loop: // When in check, search starts from here
               else
                   r -= ss->statScore / 14790;
           }
+
 
           // In general we want to cap the LMR depth search at newDepth. But for nodes
           // close to the principal variation the cap is at (newDepth + 1), which will
