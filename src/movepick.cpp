@@ -33,7 +33,11 @@ namespace {
 
   // partial_insertion_sort() sorts moves in descending order up to and including
   // a given limit. The order of moves smaller than the limit is left unspecified.
-  void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
+  void partial_insertion_sort(ExtMove* begin, ExtMove* end) {
+    int limit;
+    ExtMove* median_move = begin + (end-begin)/4;
+    std::nth_element(begin, median_move, end,[](ExtMove const & a, ExtMove const & b) {return a.value > b.value;});
+    limit = std::max(8,median_move->value);
 
     for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
         if (p->value >= limit)
@@ -202,7 +206,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, -3000 * depth);
+          partial_insertion_sort(cur, endMoves);
       }
 
       ++stage;
