@@ -54,12 +54,19 @@ namespace {
   void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
       static_assert(sizeof(ExtMove) == sizeof(std::size_t));
       ExtMove *sortedEnd = begin;
-      for (ExtMove *p = begin; p < end; ++p)
-          if (p->value >= limit) {
-              p->value += (1 << 30); //For technical reasons we need the value to be >= 0
-              std::swap(*p, *sortedEnd);
-              ++sortedEnd;
-          }
+      if(end-begin <= 10) {
+          sortedEnd = end;
+          for (ExtMove *p = begin; p < end; ++p)
+              p->value += (1 << 30) ;
+      }
+      else {
+          for (ExtMove *p = begin; p < end; ++p)
+              if (p->value >= limit) {
+                  p->value = (p->value) + (1 << 30) ; //For technical reasons we need the value to be >= 0
+                  std::swap(*p, *sortedEnd);
+                  ++sortedEnd;
+              }
+      }
 
       std::size_t num_elements = sortedEnd-begin;
       switch(num_elements){
