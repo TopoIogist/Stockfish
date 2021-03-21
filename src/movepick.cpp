@@ -34,7 +34,7 @@ namespace {
   // partial_insertion_sort() sorts moves in descending order up to and including
   // a given limit. The order of moves smaller than the limit is left unspecified.
   void partial_insertion_sort(ExtMove* begin, ExtMove* end) {
-    ExtMove* median_move = begin + (end-begin)/5;
+    ExtMove* median_move = begin + (end-begin)/3;
     std::nth_element(begin, median_move, end,[](ExtMove const & a, ExtMove const & b) {return a.value > b.value;});
 
     for (ExtMove *sortedEnd = begin, *p = begin + 1; p <= median_move; ++p)  {
