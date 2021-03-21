@@ -19,6 +19,7 @@
 #include <cassert>
 
 #include "movepick.h"
+#include "static_sort.h"
 
 namespace Stockfish {
 
@@ -31,19 +32,203 @@ namespace {
     QSEARCH_TT, QCAPTURE_INIT, QCAPTURE, QCHECK_INIT, QCHECK
   };
 
+  // This verifies that the moves are correctly ordered (or below the limit)
+  bool check_sorting(ExtMove* begin, ExtMove* end, int limit) {
+      if (end == begin) return true;
+      int last = begin->value;
+      ExtMove* p = begin;
+      for (; p < end; ++p) {
+          if (p->value < limit) break;
+          if (p->value > last) return false;
+          last = p->value;
+      }
+
+      for (; p < end; ++p) {
+          if (p->value >= limit) return false;
+      }
+      return true;
+  }
+
   // partial_insertion_sort() sorts moves in descending order up to and including
   // a given limit. The order of moves smaller than the limit is left unspecified.
   void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
+      static_assert(sizeof(ExtMove) == sizeof(std::size_t));
+      ExtMove *sortedEnd = begin;
+      for (ExtMove *p = begin; p < end; ++p)
+          if (p->value >= limit) {
+              p->value += (1 << 30); //For technical reasons we need the value to be >= 0
+              std::swap(*p, *sortedEnd);
+              ++sortedEnd;
+          }
 
-    for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
-        if (p->value >= limit)
-        {
-            ExtMove tmp = *p, *q;
-            *p = *++sortedEnd;
-            for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
-                *q = *(q - 1);
-            *q = tmp;
-        }
+      std::size_t num_elements = sortedEnd-begin;
+      switch(num_elements){
+      case 0: case 1:
+              return;
+          case 2:{
+              StaticTimSort<2> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 3:{
+              StaticTimSort<3> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 4:{
+              StaticTimSort<4> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 5:{
+              StaticTimSort<5> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 6:{
+              StaticTimSort<6> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 7:{
+              StaticTimSort<7> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 8:{
+              StaticTimSort<8> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 9:{
+              StaticTimSort<9> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 10:{
+              StaticTimSort<10> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 11:{
+              StaticTimSort<11> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 12:{
+              StaticTimSort<12> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 13:{
+              StaticTimSort<13> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 14:{
+              StaticTimSort<14> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 15:{
+              StaticTimSort<15> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 16:{
+              StaticTimSort<16> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 17:{
+              StaticTimSort<17> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 18:{
+              StaticTimSort<18> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 19:{
+              StaticTimSort<19> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 20:{
+              StaticTimSort<20> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 21:{
+              StaticTimSort<21> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 22:{
+              StaticTimSort<22> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 23:{
+              StaticTimSort<23> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 24:{
+              StaticTimSort<24> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 25:{
+              StaticTimSort<25> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 26:{
+              StaticTimSort<26> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 27:{
+              StaticTimSort<27> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 28:{
+              StaticTimSort<28> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 29:{
+              StaticTimSort<29> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 30:{
+              StaticTimSort<30> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 31: {
+              StaticTimSort<31> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          case 32: {
+              StaticTimSort<32> timBoseNelsonSort;
+              timBoseNelsonSort((std::size_t *) begin, std::greater<std::size_t>());
+              break;
+          }
+          default:
+              // Note: We consider the ExtMove data type as a std::size_t
+              // Therefore the limit are stored in the upper 32 bits and the move in the lower 32 bits
+              // this guarantees that the sort solution is unique and we do not have to use stable sort
+              std::sort((std::size_t*)begin, (std::size_t*)sortedEnd, std::greater<std::size_t>());
+      }
+
+      // Check correctness in debug mode
+      assert(check_sorting(begin, end, limit) == true);
   }
 
 } // namespace
