@@ -39,7 +39,7 @@ namespace {
         median_move = end;
     }
     else {
-        median_move =  begin + (end-begin)/4;
+        median_move =  begin + (end-begin)/5;
         std::nth_element(begin, median_move, end,[](ExtMove const & a, ExtMove const & b) {return a.value > b.value;});
     }
 
