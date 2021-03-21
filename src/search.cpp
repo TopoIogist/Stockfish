@@ -832,7 +832,6 @@ namespace {
     improving =  (ss-2)->staticEval == VALUE_NONE
                ? ss->staticEval > (ss-4)->staticEval || (ss-4)->staticEval == VALUE_NONE
                : ss->staticEval > (ss-2)->staticEval;
-    if (pastOptTime) improving = true;
 
     // Step 7. Futility pruning: child node (~50 Elo)
     if (   !PvNode
@@ -1225,6 +1224,12 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
           if (singularQuietLMR)
               r--;
+
+          // Increase reduction for lines with many silent moves
+          if (pos.rule50_count() > 5
+           && ss->staticEval < -150
+           && pastOptTime)
+              r += 1;
 
           if (captureOrPromotion)
           {
