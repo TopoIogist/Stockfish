@@ -35,11 +35,11 @@ namespace {
   // a given limit. The order of moves smaller than the limit is left unspecified.
   void partial_insertion_sort(ExtMove* begin, ExtMove* end) {
     int limit;
-    ExtMove* median_move = begin + (end-begin)/4;
+    ExtMove* median_move = begin + (end-begin)/3;
     std::nth_element(begin, median_move, end,[](ExtMove const & a, ExtMove const & b) {return a.value > b.value;});
     limit = std::max(8,median_move->value);
 
-    for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
+    for (ExtMove *sortedEnd = begin, *p = begin + 1; p <= median_move; ++p)
         if (p->value >= limit)
         {
             ExtMove tmp = *p, *q;
