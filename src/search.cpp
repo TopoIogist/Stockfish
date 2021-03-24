@@ -1257,11 +1257,21 @@ moves_loop: // When in check, search starts from here
                              + (*contHist[3])[movedPiece][to_sq(move)]
                              - 4741;
 
+              int pawnCount = pos.count<ALL_PIECES>();
+              bool earlyGame = pawnCount >  10
+                               && pos.non_pawn_material() >= QueenValueMg*2;
+
               // Decrease/increase reduction by comparing opponent's stat score (~10 Elo)
               if (ss->statScore >= -89 && (ss-1)->statScore < -116)
                   r--;
 
               else if ((ss-1)->statScore >= -112 && ss->statScore < -100)
+                  r++;
+
+              else if ((ss)->statScore < -1300
+                       && (ss-1)->statScore != 0
+                       && type_of(move) != CASTLING
+                       && earlyGame)
                   r++;
 
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
