@@ -606,7 +606,7 @@ namespace {
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool formerPv, givesCheck, improving, didLMR, priorCapture;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
-         ttCapture, singularQuietLMR;
+         ttCapture, singularQuietLMR, unsafeKing;
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
 
@@ -1106,6 +1106,9 @@ moves_loop: // When in check, search starts from here
 
       // Step 14. Extensions (~75 Elo)
 
+      unsafeKing = (pos.count<QUEEN>() == 2 && pos.count<PAWN>() >= 8)
+                && ((us == WHITE && rank_of(pos.square<KING>(~us)) <= RANK_6) || (us == BLACK && rank_of(pos.square<KING>(~us)) >= RANK_3));
+
       // Singular extension search (~70 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
       // then that move is singular and should be extended. To verify this we do
@@ -1126,6 +1129,8 @@ moves_loop: // When in check, search starts from here
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
           ss->excludedMove = MOVE_NONE;
+
+
 
           if (value < singularBeta)
           {
@@ -1225,6 +1230,9 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if opponent's move count is high (~5 Elo)
           if ((ss-1)->moveCount > 13)
               r--;
+
+          if(unsafeKing && givesCheck)
+              r -= 1;
 
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
           if (singularQuietLMR)
