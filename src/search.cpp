@@ -1105,14 +1105,13 @@ moves_loop: // When in check, search starts from here
       }
 
       // Step 14. Extensions (~75 Elo)
-      bool greek = givesCheck
+      bool sac = givesCheck
               && (distance(to_sq(move), pos.square<KING>(~us)) == 1)
-              && (*contHist[0])[movedPiece][to_sq(move)]+
-                 (*contHist[1])[movedPiece][to_sq(move)]+
-                 (*contHist[3])[movedPiece][to_sq(move)] >= 500
-              && type_of(movedPiece) == BISHOP
+              && (thisThread->mainHistory[us][from_to(move)] > 250)
               && captureOrPromotion
+              && type_of(movedPiece) != QUEEN
               && pos.non_pawn_material() >= 6 * RookValueMg;
+
       // Singular extension search (~70 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
       // then that move is singular and should be extended. To verify this we do
@@ -1163,7 +1162,7 @@ moves_loop: // When in check, search starts from here
 
       // Check extension (~2 Elo)
       else if (    givesCheck
-               && (pos.is_discovered_check_on_king(~us, move) || pos.see_ge(move) || greek))
+               && (pos.is_discovered_check_on_king(~us, move) || pos.see_ge(move) || sac))
           extension = 1;
 
       // Last captures extension
