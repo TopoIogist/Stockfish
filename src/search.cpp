@@ -1106,6 +1106,8 @@ moves_loop: // When in check, search starts from here
 
       // Step 14. Extensions (~75 Elo)
       bool greek = givesCheck
+              && (distance(to_sq(move), pos.square<KING>(~us)) == 1)
+              && (popcount(pos.attackers_to(to_sq(move))) == 2)
               && type_of(movedPiece) == BISHOP
               && captureOrPromotion
               && pos.non_pawn_material() >= 6 * RookValueMg;
@@ -1159,7 +1161,7 @@ moves_loop: // When in check, search starts from here
 
       // Check extension (~2 Elo)
       else if (    givesCheck
-               && (pos.is_discovered_check_on_king(~us, move) || pos.see_ge(move) || (greek && pos.see_ge(move,Value(-50)))))
+               && (pos.is_discovered_check_on_king(~us, move) || pos.see_ge(move) || greek))
           extension = 1;
 
       // Last captures extension
