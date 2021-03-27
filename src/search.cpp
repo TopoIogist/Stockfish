@@ -1105,7 +1105,7 @@ moves_loop: // When in check, search starts from here
       }
 
       // Step 14. Extensions (~75 Elo)
-      bool greek = type_of(movedPiece) == BISHOP;
+      bool greek = givesCheck && type_of(movedPiece) == BISHOP && captureOrPromotion;
       // Singular extension search (~70 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
       // then that move is singular and should be extended. To verify this we do
@@ -1156,7 +1156,7 @@ moves_loop: // When in check, search starts from here
 
       // Check extension (~2 Elo)
       else if (    givesCheck
-               && (pos.is_discovered_check_on_king(~us, move) || pos.see_ge(move) || (depth <= 3 && greek && pos.see_ge(move,Value(-200)))))
+               && (pos.is_discovered_check_on_king(~us, move) || pos.see_ge(move) || (greek && pos.see_ge(move,Value(-200)))))
           extension = 1;
 
       // Last captures extension
