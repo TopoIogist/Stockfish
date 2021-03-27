@@ -1105,7 +1105,7 @@ moves_loop: // When in check, search starts from here
       }
 
       // Step 14. Extensions (~75 Elo)
-      bool greek = givesCheck && type_of(movedPiece) == BISHOP && captureOrPromotion;
+      bool greek = givesCheck && type_of(movedPiece) == BISHOP && captureOrPromotion && pos.non_pawn_material() >= 4 * RookValueMg;
       // Singular extension search (~70 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
       // then that move is singular and should be extended. To verify this we do
