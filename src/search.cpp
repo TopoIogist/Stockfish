@@ -1270,11 +1270,11 @@ moves_loop: // When in check, search starts from here
               else if ((ss-1)->statScore >= -112 && ss->statScore < -100)
                   r++;
 
-              if (ss->staticEval < -150
-                  && (ss-1)->staticEval > 150
-                  && (ss-2)->staticEval < -150
-                  && ss->ply % 2 == 0)
-                  r++;
+              if (ss->staticEval < -210
+                  && (ss-1)->staticEval > 210
+                  && (ss-2)->staticEval < -210
+                  && (ss+1)->distanceFromPv >= 3)
+                  r += 1;
 
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
               // If we are not in check use statScore, but if we are in check we use
