@@ -1270,7 +1270,10 @@ moves_loop: // When in check, search starts from here
               else if ((ss-1)->statScore >= -112 && ss->statScore < -100)
                   r++;
 
-              if (ss->staticEval < -150 && (ss-1)->staticEval > 150 && (ss-2)->staticEval < -150)
+              if (ss->staticEval < -150
+                  && (ss-1)->staticEval > 150
+                  && (ss-2)->staticEval < -150
+                  && popcount((Rank2BB & pos.pieces(WHITE, PAWN)) | (Rank7BB & pos.pieces(BLACK, PAWN))) > 4)
                   r++;
 
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
