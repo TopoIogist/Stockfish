@@ -1273,7 +1273,7 @@ moves_loop: // When in check, search starts from here
               if (ss->staticEval < -150
                   && (ss-1)->staticEval > 150
                   && (ss-2)->staticEval < -150
-                  && ss->ply % 3 == 0)
+                  && ss->ply % 2 == 0)
                   r++;
 
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
