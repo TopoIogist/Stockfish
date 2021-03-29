@@ -1270,9 +1270,11 @@ moves_loop: // When in check, search starts from here
               else if ((ss-1)->statScore >= -112 && ss->statScore < -100)
                   r++;
 
-              if (ss->staticEval < -100
-                  && (ss-1)->staticEval > 100
-                  && (ss-2)->staticEval < -100)
+              if ((ss+1)->distanceFromPv >= 2
+                  && ss->staticEval < -140
+                  && (ss-1)->staticEval > 140
+                  && (ss-2)->staticEval < -140
+                  && pos.non_pawn_material() >= RookValueMg)
                   r++;
 
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
