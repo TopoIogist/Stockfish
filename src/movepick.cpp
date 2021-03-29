@@ -34,16 +34,23 @@ namespace {
   // partial_insertion_sort() sorts moves in descending order up to and including
   // a given limit. The order of moves smaller than the limit is left unspecified.
   void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
-
-    for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
-        if (p->value >= limit)
-        {
-            ExtMove tmp = *p, *q;
-            *p = *++sortedEnd;
-            for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
-                *q = *(q - 1);
-            *q = tmp;
+    static constexpr std::size_t num_buckets = 64;
+    static ExtMove buckets[num_buckets][MAX_MOVES];
+    static int bucket_size[num_buckets];
+    for(std::size_t i = 0; i < num_buckets; ++i) bucket_size[i] = 0;
+    for (ExtMove *p = begin; p < end; ++p) {
+        std::size_t idx = std::clamp((-(p->value-2048))/512,static_cast<int>(0), static_cast<int>(num_buckets-1));
+        buckets[idx][bucket_size[idx]] = *p;
+        ++bucket_size[idx];
+    }
+    ExtMove *backfill = begin;
+    for(std::size_t i = num_buckets; i > 0; --i) {
+        while(bucket_size[i-1]) {
+            *backfill = buckets[i-1][bucket_size[i-1]-1];
+            ++backfill;
+            --bucket_size[i-1];
         }
+    }
   }
 
 } // namespace
