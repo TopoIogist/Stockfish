@@ -127,6 +127,7 @@ public:
   bool pseudo_legal(const Move m) const;
   bool capture(Move m) const;
   bool capture_or_promotion(Move m) const;
+  bool queen_promotion(Move m) const;
   bool gives_check(Move m) const;
   Piece moved_piece(Move m) const;
   Piece captured_piece() const;
@@ -359,6 +360,11 @@ inline bool Position::is_chess960() const {
 inline bool Position::capture_or_promotion(Move m) const {
   assert(is_ok(m));
   return type_of(m) != NORMAL ? type_of(m) != CASTLING : !empty(to_sq(m));
+}
+
+inline bool Position::queen_promotion(Move m) const {
+  assert(is_ok(m));
+  return type_of(m) == PROMOTION && promotion_type(m) == QUEEN;
 }
 
 inline bool Position::capture(Move m) const {
