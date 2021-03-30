@@ -34,33 +34,54 @@ namespace {
   // partial_insertion_sort() sorts moves in descending order up to and including
   // a given limit. The order of moves smaller than the limit is left unspecified.
   void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
-    static constexpr std::size_t num_buckets = 64;
-    static ExtMove buckets[num_buckets][MAX_MOVES];
-    static int bucket_size[num_buckets];
+     /* std::cout << "################ INIT ##############" << std::endl;
+      std::cout << "{";
+      for (ExtMove *p = begin; p < end; ++p) {
+          std::cout << p->value << ",";
+      }
+      std::cout << "}" << std::endl;*/
+    static constexpr std::size_t num_buckets = 128;
+    thread_local ExtMove buckets[num_buckets][MAX_MOVES];
+    thread_local std::size_t bucket_size[num_buckets];
     for(std::size_t i = 0; i < num_buckets; ++i) bucket_size[i] = 0;
     for (ExtMove *p = begin; p < end; ++p) {
-        std::size_t idx = std::clamp((-(p->value-2048))/512,static_cast<int>(0), static_cast<int>(num_buckets-1));
+        std::size_t idx = std::clamp((-(p->value-32768))/512,static_cast<int>(0), static_cast<int>(num_buckets-1));
+        //std::cout << "Val: " << p->value << " using bucket: " << idx << " old bucket size: " << bucket_size[idx] << " new bucket size: ";
         buckets[idx][bucket_size[idx]] = *p;
         ++bucket_size[idx];
     }
     ExtMove *backfill = begin;
-    for(std::size_t i = num_buckets; i > 0; --i) {
-        while(bucket_size[i-1]) {
-            *backfill = buckets[i-1][bucket_size[i-1]-1];
+    ExtMove *fbEnd = begin;
+    for(std::size_t i = 0; i < num_buckets; ++i) {
+        if(fbEnd == begin && bucket_size[i] > 0)
+            fbEnd += bucket_size[i];
+        for(std::size_t j = 0; j < bucket_size[i]; ++j) {
+            *backfill = buckets[i][j];
             ++backfill;
-            --bucket_size[i-1];
         }
     }
+    assert(backfill == end);
+    /*std::cout << "################ BUCKETS ##############" << std::endl;
+    std::cout << "{";
+      for (ExtMove *p = begin; p < end; ++p) {
+          std::cout << p->value << ",";
+      }
+      std::cout << "}" << std::endl;*/
 
-    for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
-        if (p->value >= limit)
-        {
-            ExtMove tmp = *p, *q;
-            *p = *++sortedEnd;
-            for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
-                *q = *(q - 1);
-            *q = tmp;
-        }
+    for (ExtMove *sortedEnd = begin, *p = begin + 1; p < fbEnd; ++p) {
+        ExtMove tmp = *p, *q;
+        *p = *++sortedEnd;
+        for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
+            *q = *(q - 1);
+        *q = tmp;
+    }
+
+      /*std::cout << "################ SORTED ##############" << std::endl;
+      std::cout << "{";
+      for (ExtMove *p = begin; p < end; ++p) {
+          std::cout << p->value << ",";
+      }
+      std::cout << "}" << std::endl;*/
   }
 
 } // namespace
