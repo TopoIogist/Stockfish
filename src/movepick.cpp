@@ -33,27 +33,32 @@ namespace {
 
   // partial_insertion_sort() sorts moves in descending order up to and including
   // a given limit. The order of moves smaller than the limit is left unspecified.
-  void partial_insertion_sort(ExtMove* begin, ExtMove* end, int /*limit*/) {
-    static constexpr std::size_t num_buckets = 64;
-    thread_local ExtMove buckets[num_buckets][MAX_MOVES];
-    thread_local std::size_t bucket_size[num_buckets];
-    for(std::size_t i = 0; i < num_buckets; ++i) bucket_size[i] = 0;
-    for (ExtMove *p = begin; p < end; ++p) {
-        std::size_t idx = std::clamp((-(p->value-32768))/256,static_cast<int>(0), static_cast<int>(num_buckets-1));
-        buckets[idx][bucket_size[idx]] = *p;
-        ++bucket_size[idx];
-    }
-    ExtMove *backfill = begin;
-    ExtMove *fbEnd = begin;
-    for(std::size_t i = 0; i < num_buckets; ++i) {
-        if(fbEnd == begin && bucket_size[i] > 0)
-            fbEnd += bucket_size[i];
-        for(std::size_t j = 0; j < bucket_size[i]; ++j) {
-            *backfill = buckets[i][j];
-            ++backfill;
-        }
-    }
-    assert(backfill == end);
+  void partial_insertion_sort(ExtMove* begin, ExtMove* end) {
+      static constexpr std::size_t num_buckets = 128;
+      thread_local ExtMove buckets[num_buckets][MAX_MOVES];
+      thread_local std::size_t bucket_size[num_buckets];
+      for(std::size_t i = 0; i < num_buckets; ++i) bucket_size[i] = 0;
+      for (ExtMove *p = begin; p < end; ++p) {
+          std::size_t idx = std::clamp((-(p->value-16384))/512,static_cast<int>(0), static_cast<int>(num_buckets-1));
+          buckets[idx][bucket_size[idx]] = *p;
+          ++bucket_size[idx];
+      }
+      ExtMove *backfill = begin;
+      ExtMove *fbEnd = std::min(begin+5,end);
+      for(std::size_t i = 0; i < num_buckets; ++i) {
+          for(std::size_t j = 0; j < bucket_size[i]; ++j) {
+              *backfill = buckets[i][j];
+              ++backfill;
+          }
+      }
+      assert(backfill == end);
+      for (ExtMove *sortedEnd = begin, *p = begin + 1; p < fbEnd; ++p) {
+          ExtMove tmp = *p, *q;
+          *p = *++sortedEnd;
+          for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
+              *q = *(q - 1);
+          *q = tmp;
+      }
   }
 
 } // namespace
@@ -212,7 +217,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, -3000 * depth);
+          partial_insertion_sort(cur, endMoves);
       }
 
       ++stage;
