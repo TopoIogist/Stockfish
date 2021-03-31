@@ -33,32 +33,47 @@ namespace {
 
   // partial_insertion_sort() sorts moves in descending order up to and including
   // a given limit. The order of moves smaller than the limit is left unspecified.
-  void partial_insertion_sort(ExtMove* begin, ExtMove* end) {
+  void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
+      for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
+          if (p->value >= limit)
+          {
+              ExtMove tmp = *p, *q;
+              *p = *++sortedEnd;
+              for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
+                  *q = *(q - 1);
+              *q = tmp;
+          }
+  }
+
+  // bucket_sort() moves all moves into buckets which roughly correspond to
+  // descending order.
+  void bucket_sort(ExtMove* begin, ExtMove* end) {
       static constexpr std::size_t num_buckets = 32;
       thread_local ExtMove buckets[num_buckets][MAX_MOVES];
       thread_local std::size_t bucket_size[num_buckets];
       for(std::size_t i = 0; i < num_buckets; ++i) bucket_size[i] = 0;
-      int max_val = std::numeric_limits<int>::min();
-      int min_val = std::numeric_limits<int>::max();
       for (ExtMove *p = begin; p < end; ++p) {
-          max_val = std::max(max_val, p->value);
-          min_val = std::min(min_val, p->value);
-      }
-      //Already sorted trivially
-      if(max_val == min_val) return;
-      int bw_i = 1+(max_val-min_val)/num_buckets;
-      int bucket_width = sizeof(int)*8 - __builtin_clz(bw_i) - 1;
-      for (ExtMove *p = begin; p < end; ++p) {
-          std::size_t idx = std::clamp((-(p->value-max_val)) >> bucket_width, static_cast<int>(0), static_cast<int>(num_buckets-1));
+          int val = (-(p->value-40000));
+          if (p->value < 0) val += 2048;
+          std::size_t idx = std::clamp(val/2048,static_cast<int>(0), static_cast<int>(num_buckets-1));
           buckets[idx][bucket_size[idx]] = *p;
           ++bucket_size[idx];
       }
       ExtMove *backfill = begin;
+      ExtMove *fbEnd = std::min(begin+6,end);
       for(std::size_t i = 0; i < num_buckets; ++i) {
           for(std::size_t j = 0; j < bucket_size[i]; ++j) {
               *backfill = buckets[i][j];
               ++backfill;
           }
+      }
+      assert(backfill == end);
+      for (ExtMove *sortedEnd = begin, *p = begin + 1; p < fbEnd; ++p) {
+          ExtMove tmp = *p, *q;
+          *p = *++sortedEnd;
+          for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
+              *q = *(q - 1);
+          *q = tmp;
       }
   }
 
@@ -218,7 +233,10 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves);
+          if(depth <= 4)
+              partial_insertion_sort(cur, endMoves, -3000 * depth);
+          else
+              bucket_sort(cur, endMoves);
       }
 
       ++stage;
