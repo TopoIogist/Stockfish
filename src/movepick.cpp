@@ -53,14 +53,13 @@ namespace {
       thread_local std::size_t bucket_size[num_buckets];
       for(std::size_t i = 0; i < num_buckets; ++i) bucket_size[i] = 0;
       for (ExtMove *p = begin; p < end; ++p) {
-          int val = (-(p->value-50000));
-          if (p->value < 0) val += 4096;
-          std::size_t idx = std::clamp(val/4096,static_cast<int>(0), static_cast<int>(num_buckets-1));
+          int val = (-(p->value-38000));
+          if (p->value < 0) val += 5632;
+          std::size_t idx = std::clamp(val/5632,static_cast<int>(0), static_cast<int>(num_buckets-1));
           buckets[idx][bucket_size[idx]] = *p;
           ++bucket_size[idx];
       }
       ExtMove *backfill = begin;
-      ExtMove *fbEnd = std::min(begin+6,end);
       for(std::size_t i = 0; i < num_buckets; ++i) {
           for(std::size_t j = 0; j < bucket_size[i]; ++j) {
               *backfill = buckets[i][j];
@@ -68,13 +67,6 @@ namespace {
           }
       }
       assert(backfill == end);
-      for (ExtMove *sortedEnd = begin, *p = begin + 1; p < fbEnd; ++p) {
-          ExtMove tmp = *p, *q;
-          *p = *++sortedEnd;
-          for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
-              *q = *(q - 1);
-          *q = tmp;
-      }
   }
 
 } // namespace
@@ -233,7 +225,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          if(depth <= 5)
+          if(depth <= 10)
               partial_insertion_sort(cur, endMoves, -3000 * depth);
           else
               bucket_sort(cur, endMoves);
