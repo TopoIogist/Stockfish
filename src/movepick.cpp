@@ -53,9 +53,9 @@ namespace {
       thread_local std::size_t bucket_size[num_buckets];
       for(std::size_t i = 0; i < num_buckets; ++i) bucket_size[i] = 0;
       for (ExtMove *p = begin; p < end; ++p) {
-          int val = (-(p->value-50000));
-          if (p->value < 0) val += 4096;
-          std::size_t idx = std::clamp(val/4096,static_cast<int>(0), static_cast<int>(num_buckets-1));
+          int val = (-(p->value-38000));
+          if (p->value < 0) val += 2048;
+          std::size_t idx = std::clamp(val/2048,static_cast<int>(0), static_cast<int>(num_buckets-1));
           buckets[idx][bucket_size[idx]] = *p;
           ++bucket_size[idx];
       }
@@ -224,7 +224,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          if(depth <= 10)
+          if((endMoves-cur) <= 15)
               partial_insertion_sort(cur, endMoves, -3000 * depth);
           else
               bucket_sort(cur, endMoves);
