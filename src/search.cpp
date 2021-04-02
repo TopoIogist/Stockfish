@@ -420,8 +420,9 @@ void Thread::search() {
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
+          bool late = Limits.use_time_management() && Time.elapsed() > Time.optimum();
           failedHighCnt = 0;
-          while (true)
+          while (!late || !failedHighCnt)
           {
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - searchAgainCounter);
               bestValue = Stockfish::search<PV>(rootPos, ss, alpha, beta, adjustedDepth, false);
