@@ -1234,6 +1234,7 @@ moves_loop: // When in check, search starts from here
           {
               // Increase reduction for non-checking captures likely to be bad
               if (   !givesCheck
+                  && std::abs(pos.non_pawn_material(WHITE) - pos.non_pawn_material(BLACK)) < RookValueMg
                   && ss->staticEval + PieceValue[EG][pos.captured_piece()] + 210 * depth <= alpha)
                   r++;
           }
