@@ -1055,14 +1055,14 @@ moves_loop: // When in check, search starts from here
 
       // Calculate new depth for this move
       newDepth = depth - 1;
-
+      bool earlyGame = pos.non_pawn_material() >= 9*RookValueMg;
       // Step 13. Pruning at shallow depth (~200 Elo)
       if (  !rootNode
           && pos.non_pawn_material(us)
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-          moveCountPruning = moveCount >= futility_move_count(improving, depth);
+          moveCountPruning = moveCount >= futility_move_count(improving, depth) + 2*earlyGame;
 
           // Reduced depth of the next LMR search
           int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), 0);
