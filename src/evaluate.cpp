@@ -1091,11 +1091,13 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&]()
       {
-         int material = ( 10 * QueenValueMg  * pos.count<QUEEN>()
-                        + 9  * BishopValueMg * pos.count<BISHOP>()
-                        + 10 * KnightValueMg * pos.count<KNIGHT>()
-                        + 10 * RookValueMg   * pos.count<ROOK>()
-                        + 40 * PawnValueMg   * pos.count<PAWN>() ) /10;
+         int PieceValues[5] = { 100, 100, 100, 100, 100 };
+         TUNE(SetRange(80, 120), PieceValues);
+         int material = ( PieceValues[0] * QueenValueMg  * pos.count<QUEEN>()
+                        + PieceValues[1] * BishopValueMg * pos.count<BISHOP>()
+                        + PieceValues[2] * KnightValueMg * pos.count<KNIGHT>()
+                        + PieceValues[3] * RookValueMg   * pos.count<ROOK>()
+                        + PieceValues[4] * 4*PawnValueMg * pos.count<PAWN>() ) /100;
          int scale =  580
                     + material / 32
                     - 4 * pos.rule50_count();
