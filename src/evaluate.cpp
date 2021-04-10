@@ -1076,7 +1076,7 @@ make_v:
 
 } // namespace Eval
 
-int PieceValues[5] = { 100, 100, 100, 100, 100 };
+int PieceValues[5] = { 82, 112, 99, 93, 95 };
 TUNE(SetRange(50, 200), PieceValues);
 
 /// evaluate() is the evaluator for the outer world. It returns a static
