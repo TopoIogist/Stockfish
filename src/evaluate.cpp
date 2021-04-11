@@ -1091,8 +1091,8 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&]()
       {
-         int material = pos.non_pawn_material() + Value(91) * pos.count<PAWN>();
-         int scale =  492
+         int material = pos.non_pawn_material() + Value(52) * pos.count<PAWN>();
+         int scale =  403
                     + material / 32
                     - 4 * pos.rule50_count();
 
