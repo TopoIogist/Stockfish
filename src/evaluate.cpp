@@ -1076,10 +1076,6 @@ make_v:
 
 } // namespace Eval
 
-//int PieceValues[5] = { 74, 97, 102, 89, 112 };
-int PieceValues[5] = { 49, 95, 104, 77, 124 };
-TUNE(SetRange(50, 200), PieceValues);
-
 /// evaluate() is the evaluator for the outer world. It returns a static
 /// evaluation of the position from the point of view of the side to move.
 
@@ -1094,11 +1090,8 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&]()
       {
-         int material = ( PieceValues[0] * QueenValueMg  * pos.count<QUEEN>()
-                        + PieceValues[1] * BishopValueMg * pos.count<BISHOP>()
-                        + PieceValues[2] * KnightValueMg * pos.count<KNIGHT>()
-                        + PieceValues[3] * RookValueMg   * pos.count<ROOK>()
-                        + PieceValues[4] * 4*PawnValueMg * pos.count<PAWN>() ) /100;
+         int material = pos.nnue_material();
+         //std::cout << "NN: " << material << " old: " << (pos.non_pawn_material()/*+4 * PawnValueMg * pos.count<PAWN>()*/) << std::endl;
          int scale =  580
                     + material / 32
                     - 4 * pos.rule50_count();

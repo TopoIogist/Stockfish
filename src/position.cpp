@@ -348,11 +348,16 @@ void Position::set_check_info(StateInfo* si) const {
 /// The function is only used when a new position is set up, and to verify
 /// the correctness of the StateInfo data when running in debug mode.
 
+constexpr Value PieceValueNnue[PIECE_NB] =
+{ VALUE_ZERO, 124*4*PawnValueMg/100, 104*KnightValueMg/100, 95*BishopValueMg/100, 77*RookValueMg/100, 49*QueenValueMg/100, VALUE_ZERO, VALUE_ZERO,
+  VALUE_ZERO, 124*4*PawnValueMg/100, 104*KnightValueMg/100, 95*BishopValueMg/100, 77*RookValueMg/100, 49*QueenValueMg/100, VALUE_ZERO, VALUE_ZERO };
+
 void Position::set_state(StateInfo* si) const {
 
   si->key = si->materialKey = 0;
   si->pawnKey = Zobrist::noPawns;
   si->nonPawnMaterial[WHITE] = si->nonPawnMaterial[BLACK] = VALUE_ZERO;
+  si->nnueMaterial[WHITE] = si->nnueMaterial[BLACK] = VALUE_ZERO;
   si->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
 
   set_check_info(si);
@@ -363,11 +368,15 @@ void Position::set_state(StateInfo* si) const {
       Piece pc = piece_on(s);
       si->key ^= Zobrist::psq[pc][s];
 
-      if (type_of(pc) == PAWN)
+      if (type_of(pc) == PAWN) {
           si->pawnKey ^= Zobrist::psq[pc][s];
+          si->nnueMaterial[color_of(pc)] += PieceValueNnue[pc];
+      }
 
-      else if (type_of(pc) != KING)
+      else if (type_of(pc) != KING) {
           si->nonPawnMaterial[color_of(pc)] += PieceValue[MG][pc];
+          si->nnueMaterial[color_of(pc)] += PieceValueNnue[pc];
+      }
   }
 
   if (si->epSquare != SQ_NONE)
@@ -750,9 +759,13 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
           }
 
           st->pawnKey ^= Zobrist::psq[captured][capsq];
+          st->nnueMaterial[them] -= PieceValueNnue[captured];
       }
-      else
+      else {
           st->nonPawnMaterial[them] -= PieceValue[MG][captured];
+          st->nnueMaterial[them] -= PieceValueNnue[captured];
+      }
+
 
       if (Eval::useNNUE)
       {
@@ -847,6 +860,8 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
           // Update material
           st->nonPawnMaterial[us] += PieceValue[MG][promotion];
+          st->nnueMaterial[us] += PieceValueNnue[promotion];
+          st->nnueMaterial[us] -= PieceValueNnue[B_PAWN];
       }
 
       // Update pawn hash key
