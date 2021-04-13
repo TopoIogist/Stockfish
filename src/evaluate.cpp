@@ -1096,7 +1096,8 @@ Value Eval::evaluate(const Position& pos) {
                     + material / 32
                     - 4 * pos.rule50_count();
 
-         Value nnue = NNUE::evaluate(pos) * scale / 1024 + Tempo;
+         int node_lg = ((unsigned) (8*sizeof (unsigned long long) - __builtin_clzll((1+pos.this_thread()->nodes)) - 1));
+         Value nnue = NNUE::evaluate(pos) * scale / 1024 + 19 + std::clamp(0, 10, node_lg-15);
 
          if (pos.is_chess960())
              nnue += fix_FRC(pos);
