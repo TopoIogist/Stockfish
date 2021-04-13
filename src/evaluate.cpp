@@ -1091,8 +1091,7 @@ Value Eval::evaluate(const Position& pos) {
       auto  adjusted_NNUE = [&]()
       {
          int material = pos.nnue_material();
-         //std::cout << "NN: " << material << " old: " << (pos.non_pawn_material()/*+4 * PawnValueMg * pos.count<PAWN>()*/) << std::endl;
-         int scale =  580
+         int scale =  505
                     + material / 32
                     - 4 * pos.rule50_count();
 

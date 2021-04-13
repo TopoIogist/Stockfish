@@ -349,8 +349,8 @@ void Position::set_check_info(StateInfo* si) const {
 /// the correctness of the StateInfo data when running in debug mode.
 
 constexpr Value PieceValueNnue[PIECE_NB] =
-{ VALUE_ZERO, 124*4*PawnValueMg/100, 104*KnightValueMg/100, 95*BishopValueMg/100, 77*RookValueMg/100, 49*QueenValueMg/100, VALUE_ZERO, VALUE_ZERO,
-  VALUE_ZERO, 124*4*PawnValueMg/100, 104*KnightValueMg/100, 95*BishopValueMg/100, 77*RookValueMg/100, 49*QueenValueMg/100, VALUE_ZERO, VALUE_ZERO };
+{ VALUE_ZERO, 445*PawnValueMg/100, 100*KnightValueMg/100, 100*BishopValueMg/100, 34*RookValueMg/100, 100*QueenValueMg/100, VALUE_ZERO, VALUE_ZERO,
+  VALUE_ZERO, 445*PawnValueMg/100, 100*KnightValueMg/100, 100*BishopValueMg/100, 34*RookValueMg/100, 100*QueenValueMg/100, VALUE_ZERO, VALUE_ZERO };
 
 void Position::set_state(StateInfo* si) const {
 
