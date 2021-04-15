@@ -1096,8 +1096,10 @@ Value Eval::evaluate(const Position& pos) {
                     + material / 32
                     - 4 * pos.rule50_count();
 
+         //For NNUE, we dynamically compute the tempo based on the amount of processed nodes.
          int node_lg = ((unsigned) (8*sizeof (unsigned long long) - __builtin_clzll((1+pos.this_thread()->nodes)) - 1));
-         Value nnue = NNUE::evaluate(pos) * scale / 1024 + 18 + std::clamp(0, 5, node_lg-14);
+         int tempo = 19 + std::clamp(0, 10, node_lg-14);
+         Value nnue = NNUE::evaluate(pos) * scale / 1024 + tempo;
 
          if (pos.is_chess960())
              nnue += fix_FRC(pos);
