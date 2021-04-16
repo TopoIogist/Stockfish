@@ -1098,7 +1098,7 @@ Value Eval::evaluate(const Position& pos) {
 
          //For NNUE, we dynamically compute the tempo based on the amount of processed nodes.
          int node_lg = ((unsigned) (8*sizeof (unsigned long long) - __builtin_clzll((1+pos.this_thread()->nodes)) - 1));
-         int tempo = 18 + std::clamp(node_lg-18, 0, 12);
+         int tempo = 10 + 2*std::clamp(node_lg-16, 0, 15);
          Value nnue = NNUE::evaluate(pos) * scale / 1024 + tempo;
 
          if (pos.is_chess960())
