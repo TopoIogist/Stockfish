@@ -1091,7 +1091,7 @@ Value Eval::evaluate(const Position& pos) {
       auto  adjusted_NNUE = [&]()
       {
          int material = pos.nnue_material();
-         int scale =  595
+         int scale =  590
                     + material / 32
                     - 4 * pos.rule50_count();
 
