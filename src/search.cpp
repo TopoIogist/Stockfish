@@ -467,7 +467,7 @@ void Thread::search() {
               else
                   break;
 
-              delta += ( delta * (222 + 24*std::clamp(rootDepth-6, Depth(0), Depth(9))) + 5200)/1024;
+              delta += ( delta * (100 + 5*std::clamp(rootDepth-13, Depth(0), Depth(3))) + 3500)/1024;
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
           }
