@@ -92,6 +92,11 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
                              && pos.see_ge(ttm, threshold));
 }
 
+constexpr Value PieceQuietValue[PIECE_NB] =
+{ VALUE_ZERO, Value(0),    Value(15),     Value(0),     Value(0),   Value(0), VALUE_ZERO, VALUE_ZERO,
+  VALUE_ZERO, Value(0),    Value(15),     Value(0),     Value(0),   Value(0), VALUE_ZERO, VALUE_ZERO};
+  //          PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg
+
 /// MovePicker::score() assigns a numerical value to each move in a list, used
 /// for sorting. Captures are ordered by Most Valuable Victim (MVV), preferring
 /// captures with a good history. Quiets moves are ordered using the histories.
@@ -106,7 +111,7 @@ void MovePicker::score() {
                    + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
 
       else if constexpr (Type == QUIETS)
-          m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
+          m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)] + PieceQuietValue[pos.moved_piece(m)]
                    + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
