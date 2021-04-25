@@ -1227,8 +1227,8 @@ moves_loop: // When in check, search starts from here
           if (singularQuietLMR)
               r--;
 
-          if(type_of((ss-3)->movedPiece) == PAWN && type_of((ss-1)->movedPiece) == PAWN)
-              r += 1;
+          if(type_of((ss-3)->movedPiece) == PAWN && type_of((ss-2)->movedPiece) == PAWN&& type_of((ss-1)->movedPiece) == PAWN && pos.non_pawn_material())
+              r += 2;
 
           if (captureOrPromotion)
           {
