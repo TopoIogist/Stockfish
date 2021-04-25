@@ -1246,8 +1246,8 @@ moves_loop: // When in check, search starts from here
               if (cutNode)
                   r += 2;
 
-              if(type_of((ss-2)->movedPiece) == PAWN)
-                  r += 2;
+              if(type_of((ss-3)->movedPiece) == PAWN && type_of((ss-1)->movedPiece) == PAWN)
+                  r += 1;
 
               // Decrease reduction for moves that escape a capture. Filter out
               // castling moves, because they are coded as "king captures rook" and
