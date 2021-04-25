@@ -613,6 +613,7 @@ namespace {
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
     ss->inCheck        = pos.checkers();
+    ss->movedPiece     = NO_PIECE;
     priorCapture       = pos.captured_piece();
     Color us           = pos.side_to_move();
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
@@ -1226,6 +1227,9 @@ moves_loop: // When in check, search starts from here
           if (singularQuietLMR)
               r--;
 
+          if(type_of((ss-3)->movedPiece) == PAWN && type_of((ss-1)->movedPiece) == PAWN)
+              r += 1;
+
           if (captureOrPromotion)
           {
               // Increase reduction for non-checking captures likely to be bad
@@ -1245,9 +1249,6 @@ moves_loop: // When in check, search starts from here
               // Increase reduction for cut nodes (~10 Elo)
               if (cutNode)
                   r += 2;
-
-              if(type_of((ss-3)->movedPiece) == PAWN && type_of((ss-1)->movedPiece) == PAWN)
-                  r += 1;
 
               // Decrease reduction for moves that escape a capture. Filter out
               // castling moves, because they are coded as "king captures rook" and
