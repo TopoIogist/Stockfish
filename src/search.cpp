@@ -1042,6 +1042,7 @@ moves_loop: // When in check, search starts from here
       extension = 0;
       captureOrPromotion = pos.capture_or_promotion(move);
       movedPiece = pos.moved_piece(move);
+      ss->movedPiece = movedPiece;
       givesCheck = pos.gives_check(move);
 
       // Indicate PvNodes that will probably fail low if node was searched with non-PV search
@@ -1243,6 +1244,9 @@ moves_loop: // When in check, search starts from here
 
               // Increase reduction for cut nodes (~10 Elo)
               if (cutNode)
+                  r += 2;
+
+              if(type_of((ss-2)->movedPiece) == PAWN)
                   r += 2;
 
               // Decrease reduction for moves that escape a capture. Filter out
