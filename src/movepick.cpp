@@ -93,8 +93,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 }
 
 constexpr Value PieceQuietValue[PIECE_NB] =
-{ VALUE_ZERO, Value(1),    Value(2),     Value(9),     Value(8),   Value(2), VALUE_ZERO, VALUE_ZERO,
-  VALUE_ZERO, Value(1),    Value(2),     Value(9),     Value(8),   Value(2), VALUE_ZERO, VALUE_ZERO};
+{ VALUE_ZERO, Value(4),    Value(7),     Value(4),     Value(5),   Value(8), VALUE_ZERO, VALUE_ZERO,
+  VALUE_ZERO, Value(4),    Value(7),     Value(4),     Value(5),   Value(8), VALUE_ZERO, VALUE_ZERO};
   //          PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg
 
 /// MovePicker::score() assigns a numerical value to each move in a list, used
@@ -111,12 +111,16 @@ void MovePicker::score() {
                    + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
 
       else if constexpr (Type == QUIETS)
-          m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)] + PieceQuietValue[pos.moved_piece(m)]
-                   + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
-                   + (ply < MAX_LPH ? std::min(4, depth / 3) * (*lowPlyHistory)[ply][from_to(m)] : 0);
+    {
+        m.value = (*mainHistory)[pos.side_to_move()][from_to(m)]
+                  + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
+                  + (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
+                  + (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
+                  + (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
+                  + (ply < MAX_LPH ? std::min(4, depth / 3) * (*lowPlyHistory)[ply][from_to(m)] : 0);
+        if((*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] != 0)
+            m.value += PieceQuietValue[pos.moved_piece(m)];
+    }
 
       else // Type == EVASIONS
       {
