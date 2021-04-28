@@ -93,8 +93,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
 }
 
 constexpr Value PieceQuietValue[PIECE_NB] =
-{ VALUE_ZERO, Value(10),    Value(8),     Value(4),     Value(15),   Value(-20), VALUE_ZERO, VALUE_ZERO,
-  VALUE_ZERO, Value(10),    Value(8),     Value(4),     Value(15),   Value(-20), VALUE_ZERO, VALUE_ZERO};
+{ VALUE_ZERO, Value(20),    Value(-20),     Value(-20),     Value(-20),   Value(-20), VALUE_ZERO, VALUE_ZERO,
+  VALUE_ZERO, Value(20),    Value(-20),     Value(-20),     Value(-20),   Value(-20), VALUE_ZERO, VALUE_ZERO};
   //          PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg
 
 /// MovePicker::score() assigns a numerical value to each move in a list, used
