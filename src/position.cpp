@@ -349,8 +349,8 @@ void Position::set_check_info(StateInfo* si) const {
 /// the correctness of the StateInfo data when running in debug mode.
 
 constexpr Value PieceValueNnue[PIECE_NB] =
-{ VALUE_ZERO, Value(604),    Value(481),      Value(525),   Value(1771), Value(1949)    , VALUE_ZERO, VALUE_ZERO,
-  VALUE_ZERO, Value(604),    Value(481),      Value(525),   Value(1771), Value(1949)    , VALUE_ZERO, VALUE_ZERO };
+{ VALUE_ZERO, Value(404),    Value(923),      Value(967),   Value(1776), Value(1539)    , VALUE_ZERO, VALUE_ZERO,
+  VALUE_ZERO, Value(404),    Value(923),      Value(967),   Value(1776), Value(1539)    , VALUE_ZERO, VALUE_ZERO };
 //VALUE_ZERO, 4*PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO
 //                 504,        781,            825,           1276,         2538
 
