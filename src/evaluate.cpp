@@ -1108,16 +1108,16 @@ Value Eval::evaluate(const Position& pos) {
       // a small probability of using the classical eval when PSQ imbalance is small.
       Value psq = Value(abs(eg_value(pos.psq_score())));
       int   r50 = 16 + pos.rule50_count();
+      bool  balancedRookEndgame = pos.non_pawn_material(WHITE) == RookValueMg
+                          && pos.non_pawn_material(BLACK) == RookValueMg
+                          && std::abs(pos.count<PAWN>(WHITE) - pos.count<PAWN>(BLACK)) <= 1;
       bool  largePsq = psq * 16 > (NNUEThreshold1 + pos.non_pawn_material() / 64) * r50;
-      bool  classical = largePsq || (psq > PawnValueMg / 4 && !(pos.this_thread()->nodes & 0xB));
+      bool  classical = !balancedRookEndgame && (largePsq || (psq > PawnValueMg / 4 && !(pos.this_thread()->nodes & 0xB)));
 
       // Use classical evaluation for really low piece endgames.
       // One critical case is the draw for bishop + A/H file pawn vs naked king.
       bool lowPieceEndgame =   pos.non_pawn_material() == BishopValueMg
-                               || (pos.non_pawn_material() < 2 * RookValueMg && pos.count<PAWN>() < 2)
-                               || (pos.non_pawn_material(WHITE) == RookValueMg
-                                   && pos.non_pawn_material(BLACK) == RookValueMg
-                                   && std::abs(pos.count<PAWN>(WHITE) - pos.count<PAWN>(BLACK)) <= 1);
+                               || (pos.non_pawn_material() < 2 * RookValueMg && pos.count<PAWN>() < 2);
 
       v = classical || lowPieceEndgame ? Evaluation<NO_TRACE>(pos).value() 
                                        : adjusted_NNUE();
