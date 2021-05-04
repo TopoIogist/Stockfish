@@ -974,7 +974,7 @@ namespace {
 
     // If we have a specialized evaluation function for the current material
     // configuration, call it and return.
-    if (me->specialized_eval_exists())
+    if (me->specialized_eval_exists() && !pos.morphy)
         return me->evaluate(pos);
 
     // Initialize score by reading the incrementally updated scores included in
@@ -991,7 +991,7 @@ namespace {
         return abs(mg_value(score) + eg_value(score)) / 2 > lazyThreshold + pos.non_pawn_material() / 64;
     };
 
-    if (lazy_skip(LazyThreshold1))
+    if (lazy_skip(LazyThreshold1) && !pos.morphy)
         goto make_v;
 
     // Main evaluation begins here
@@ -1008,16 +1008,24 @@ namespace {
     score += mobility[WHITE] - mobility[BLACK];
 
     // More complex interactions that require fully populated attack bitboards
-    score +=  king<   WHITE>() - king<   BLACK>()
+    score +=  (king<   WHITE>() - king<   BLACK>())
             + passed< WHITE>() - passed< BLACK>();
 
-    if (lazy_skip(LazyThreshold2))
+    if (lazy_skip(LazyThreshold2) && !pos.morphy)
         goto make_v;
 
-    score +=  threats<WHITE>() - threats<BLACK>()
-            + space<  WHITE>() - space<  BLACK>();
+    score +=  (threats<WHITE>() - threats<BLACK>())
+            + (space<  WHITE>() - space<  BLACK>());
 
 make_v:
+    if (pos.morphy) {
+        score = Score(50);
+        score += (threats<WHITE>() - threats<BLACK>());
+        score += 3 * (king<   WHITE>() - king<   BLACK>());
+        score += 2 * (space<  WHITE>() - space<  BLACK>());
+        score += 2 * me->imbalance();
+        if (type_of(pos.lastMovedPiece) == PAWN && pos.game_ply() >= 3) score += (pos.side_to_move() == WHITE ? -30 : 30);
+    }
     // Derive single value from mg and eg parts of score
     Value v = winnable(score);
 
@@ -1034,7 +1042,9 @@ make_v:
     v = (v / 16) * 16;
 
     // Side to move point of view
-    v = (pos.side_to_move() == WHITE ? v : -v) + Tempo;
+    v = (pos.side_to_move() == WHITE ? v : -v);
+    if (!pos.morphy)
+        v += Tempo;
 
     return v;
   }
@@ -1078,62 +1088,70 @@ make_v:
 } // namespace Eval
 
 
+Value Eval::evaluate_orig(const Position& pos) {
+
+	Value v;
+
+	if (!Eval::useNNUE)
+		v = Evaluation<NO_TRACE>(pos).value();
+	else
+	{
+		// Scale and shift NNUE for compatibility with search and classical evaluation
+		auto  adjusted_NNUE = [&]()
+		{
+			int material = pos.non_pawn_material() + PawnValueMg * pos.count<PAWN>();
+			int scale = 650
+				+ material / 40;
+
+			Value nnue = NNUE::evaluate(pos) * scale / 1024 + Time.tempoNNUE - 5 * std::clamp(pos.rule50_count(), 2, 5);
+
+			if (pos.is_chess960())
+				nnue += fix_FRC(pos);
+
+			return nnue;
+		};
+
+		// If there is PSQ imbalance we use the classical eval. We also introduce
+		// a small probability of using the classical eval when PSQ imbalance is small.
+		Value psq = Value(abs(eg_value(pos.psq_score())));
+		int   r50 = 16 + pos.rule50_count();
+		bool  largePsq = psq * 16 > (NNUEThreshold1 + pos.non_pawn_material() / 64) * r50;
+		bool  classical = largePsq || (psq > PawnValueMg / 4 && !(pos.this_thread()->nodes & 0xB));
+
+		// Use classical evaluation for really low piece endgames.
+		// One critical case is the draw for bishop + A/H file pawn vs naked king.
+		bool lowPieceEndgame = pos.non_pawn_material() == BishopValueMg
+			|| (pos.non_pawn_material() < 2 * RookValueMg && pos.count<PAWN>() < 2);
+
+		v = classical || lowPieceEndgame ? Evaluation<NO_TRACE>(pos).value()
+			: adjusted_NNUE();
+
+		// If the classical eval is small and imbalance large, use NNUE nevertheless.
+		// For the case of opposite colored bishops, switch to NNUE eval with small
+		// probability if the classical eval is less than the threshold.
+		if (largePsq
+			&& !lowPieceEndgame
+			&& (abs(v) * 16 < NNUEThreshold2 * r50
+				|| (pos.opposite_bishops()
+					&& abs(v) * 16 < (NNUEThreshold1 + pos.non_pawn_material() / 64) * r50
+					&& !(pos.this_thread()->nodes & 0xB))))
+			v = adjusted_NNUE();
+	}
+
+	return v;
+}
 /// evaluate() is the evaluator for the outer world. It returns a static
 /// evaluation of the position from the point of view of the side to move.
 
 Value Eval::evaluate(const Position& pos) {
-
-  Value v;
-
-  if (!Eval::useNNUE)
-      v = Evaluation<NO_TRACE>(pos).value();
-  else
-  {
-      // Scale and shift NNUE for compatibility with search and classical evaluation
-      auto  adjusted_NNUE = [&]()
-      {
-         int material = pos.non_pawn_material() + 4 * PawnValueMg * pos.count<PAWN>();
-         int scale =  580
-                    + material / 32
-                    - 4 * pos.rule50_count();
-
-         Value nnue = NNUE::evaluate(pos) * scale / 1024 + Time.tempoNNUE;
-
-         if (pos.is_chess960())
-             nnue += fix_FRC(pos);
-
-         return nnue;
-      };
-
-      // If there is PSQ imbalance we use the classical eval. We also introduce
-      // a small probability of using the classical eval when PSQ imbalance is small.
-      Value psq = Value(abs(eg_value(pos.psq_score())));
-      int   r50 = 16 + pos.rule50_count();
-      bool  largePsq = psq * 16 > (NNUEThreshold1 + pos.non_pawn_material() / 64) * r50;
-      bool  classical = largePsq || (psq > PawnValueMg / 4 && !(pos.this_thread()->nodes & 0xB));
-
-      // Use classical evaluation for really low piece endgames.
-      // One critical case is the draw for bishop + A/H file pawn vs naked king.
-      bool lowPieceEndgame =   pos.non_pawn_material() == BishopValueMg
-                            || (pos.non_pawn_material() < 2 * RookValueMg && pos.count<PAWN>() < 2);
-
-      v = classical || lowPieceEndgame ? Evaluation<NO_TRACE>(pos).value() 
-                                       : adjusted_NNUE();
-
-      // If the classical eval is small and imbalance large, use NNUE nevertheless.
-      // For the case of opposite colored bishops, switch to NNUE eval with small
-      // probability if the classical eval is less than the threshold.
-      if (    largePsq
-          && !lowPieceEndgame
-          && (   abs(v) * 16 < NNUEThreshold2 * r50
-              || (   pos.opposite_bishops()
-                  && abs(v) * 16 < (NNUEThreshold1 + pos.non_pawn_material() / 64) * r50
-                  && !(pos.this_thread()->nodes & 0xB))))
-          v = adjusted_NNUE();
-  }
+  pos.morphy = false;
+  Value v = evaluate_orig(pos);
+  pos.morphy = true;
+  v += Evaluation<NO_TRACE>(pos).value();
+  pos.morphy = false;
 
   // Damp down the evaluation linearly when shuffling
-  v = v * (100 - pos.rule50_count()) / 100;
+  v = v - 20*std::max(pos.rule50_count(),3) + 20*3;
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
