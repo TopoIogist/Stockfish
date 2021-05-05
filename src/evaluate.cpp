@@ -1133,7 +1133,7 @@ Value Eval::evaluate(const Position& pos) {
   }
 
   // Evaluation grain
-  v = (v / 7) * 7;
+  v = Value(static_cast<int>(v) & 0xFFFFFFF8);
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
