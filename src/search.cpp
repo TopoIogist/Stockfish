@@ -1216,6 +1216,14 @@ moves_loop: // When in check, search starts from here
           if ((ss-1)->moveCount > 13)
               r--;
 
+          // Increase reduction for lines with many silent moves
+          if (pos.rule50_count() > 5
+              && pos.non_pawn_material() >= RookValueEg
+              && depth < 5
+              && ss->staticEval <= -150)
+              r++;
+
+
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
           if (singularQuietLMR)
               r--;
