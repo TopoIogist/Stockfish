@@ -1136,7 +1136,7 @@ Value Eval::evaluate(const Position& pos) {
   v = v * (100 - pos.rule50_count()) / 100;
 
   // Evaluation grain
-  v = Value(static_cast<int>(v) & 0xFFFFFFF8);
+  v = (v / 8) * 8;
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
