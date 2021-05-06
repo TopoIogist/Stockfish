@@ -1103,7 +1103,9 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&]()
       {
-         Value nnue = NNUE::evaluate(pos) + Time.tempoNNUE;
+         int scale = 950+20*pos.count<PAWN>();
+
+         Value nnue = NNUE::evaluate(pos) * scale / 1024 + Time.tempoNNUE;
 
          if (pos.is_chess960())
              nnue += fix_FRC(pos);
