@@ -1106,7 +1106,7 @@ Value Eval::evaluate(const Position& pos) {
          int scale = 970 + pos.non_pawn_material()/16
                      + 16*pos.count<PAWN>() - 8*pos.rule50_count();
 
-         Value nnue = NNUE::evaluate(pos) * scale / 1024 + Time.tempoNNUE;
+         Value nnue = NNUE::evaluate(pos) * scale / 1024;
 
          if (pos.is_chess960())
              nnue += fix_FRC(pos);
@@ -1119,7 +1119,7 @@ Value Eval::evaluate(const Position& pos) {
       Value psq = Value(abs(eg_value(pos.psq_score())));
       int   r50 = 16 + pos.rule50_count();
       bool  largePsq = psq * 16 > (NNUEThreshold1 + pos.non_pawn_material() / 64) * r50;
-      bool  classical = largePsq;
+      bool  classical = largePsq || (psq > PawnValueMg / 4 && !(pos.this_thread()->nodes & 0xB));
 
       // Use classical evaluation for really low piece endgames.
       // One critical case is the draw for bishop + A/H file pawn vs naked king.
@@ -1136,8 +1136,7 @@ Value Eval::evaluate(const Position& pos) {
           && !lowPieceEndgame
           && (   abs(v) * 16 < NNUEThreshold2 * r50
               || (   pos.opposite_bishops()
-                  && abs(v) * 16 < (NNUEThreshold1 + pos.non_pawn_material() / 64) * r50
-                  && !(pos.this_thread()->nodes & 0xB))))
+                  && abs(v) * 16 < (NNUEThreshold1 + pos.non_pawn_material() / 64) * r50)))
           v = adjusted_NNUE();
   }
 
