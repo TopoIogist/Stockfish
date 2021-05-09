@@ -166,7 +166,7 @@ namespace Stockfish::Eval::NNUE {
       update_accumulator(pos, WHITE);
       update_accumulator(pos, BLACK);
 
-      const Color perspectives[2] = {WHITE, BLACK};
+      const Color perspectives[2] = {pos.side_to_move(), ~pos.side_to_move()};
       const auto& accumulation = pos.state()->accumulator.accumulation;
       const auto& psqtAccumulation = pos.state()->accumulator.psqtAccumulation;
 
