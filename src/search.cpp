@@ -66,7 +66,7 @@ namespace {
 
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
-    return Value(234 * (d - improving));
+    return Value(220 * (d - improving));
   }
 
   // Reductions lookup table, initialized at startup
@@ -1180,7 +1180,7 @@ moves_loop: // When in check, search starts from here
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
               || cutNode
-              || (!PvNode && !formerPv && captureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())] < 3678)
+              || (!PvNode && !formerPv && captureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())] < 3674)
               || thisThread->ttHitAverage < 432 * TtHitAverageResolution * TtHitAverageWindow / 1024)
           && (!PvNode || ss->ply > 1 || thisThread->id() % 4 != 3))
       {
@@ -1264,7 +1264,7 @@ moves_loop: // When in check, search starts from here
               // the sum of main history and first continuation history with an offset.
               if (ss->inCheck)
                   r -= (thisThread->mainHistory[us][from_to(move)]
-                     + (*contHist[0])[movedPiece][to_sq(move)] - 3833) / 16384;
+                     + (*contHist[0])[movedPiece][to_sq(move)] - 3830) / 16384;
               else
                   r -= ss->statScore / 14790;
           }
