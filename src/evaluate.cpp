@@ -1103,15 +1103,16 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&]()
       {
-         int scale =  970 + pos.non_pawn_material()/32
-                       + 17*pos.count<PAWN>();
+          int scale =  970 + pos.non_pawn_material()/32 + 17*pos.count<PAWN>();
+          Value net_eval = NNUE::evaluate(pos);
+          Value nnue = net_eval * scale / 1024 + Time.tempoNNUE;
+          if(net_eval != 0) nnue -= 45 + std::max(0,(int)net_eval/5);
+          else nnue -= 20;
 
-         Value nnue = NNUE::evaluate(pos) * scale / 1024 + Time.tempoNNUE;
+          if (pos.is_chess960())
+              nnue += fix_FRC(pos);
 
-         if (pos.is_chess960())
-             nnue += fix_FRC(pos);
-
-         return nnue;
+          return nnue;
       };
 
       // If there is PSQ imbalance we use the classical eval. We also introduce
