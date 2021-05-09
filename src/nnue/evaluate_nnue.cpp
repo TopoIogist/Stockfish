@@ -132,11 +132,12 @@ namespace Stockfish::Eval::NNUE {
     const std::size_t bucket = (popcount(pos.pieces()) - 1) / 4;
 
     const auto [psqt, lazy] = featureTransformer->transform(pos, transformedFeatures, bucket);
+    int stm = pos.side_to_move() == WHITE ? 1 : -1;
     if (lazy) {
-      return static_cast<Value>(psqt / OutputScale);
+      return static_cast<Value>(psqt / OutputScale)*stm;
     } else {
       const auto output = network[bucket]->propagate(transformedFeatures, buffer);
-      return static_cast<Value>((output[0] + psqt) / OutputScale);
+      return static_cast<Value>((output[0] + psqt) / OutputScale)*stm;
     }
   }
 
