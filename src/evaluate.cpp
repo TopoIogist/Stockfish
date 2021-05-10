@@ -1092,7 +1092,7 @@ make_v:
 /// evaluate() is the evaluator for the outer world. It returns a static
 /// evaluation of the position from the point of view of the side to move.
 
-Value Eval::evaluate(const Position& pos) {
+Value Eval::evaluate(const Position& pos, bool mask_stm) {
 
   Value v;
 
@@ -1104,10 +1104,21 @@ Value Eval::evaluate(const Position& pos) {
       auto  adjusted_NNUE = [&]()
       {
           int scale =  970 + pos.non_pawn_material()/32 + 17*pos.count<PAWN>();
-          Value net_eval = NNUE::evaluate(pos);
+          Value net_eval;
+
+          if((!mask_stm || pos.this_thread()->nodes & 0xB) || pos.side_to_move() == WHITE) {
+              net_eval = NNUE::evaluate(pos);
+          }
+          else {
+              StateInfo foo;
+              Position & evilHack = const_cast<Position&>(pos);
+              evilHack.do_null_move(foo);
+              net_eval = -NNUE::evaluate(evilHack);
+              evilHack.undo_null_move();
+          }
+
           Value nnue = net_eval * scale / 1024 + Time.tempoNNUE;
-          if(net_eval != 0) nnue -= 45 + std::max(0,(int)net_eval/5);
-          else nnue -= 20;
+
 
           if (pos.is_chess960())
               nnue += fix_FRC(pos);
@@ -1202,7 +1213,7 @@ std::string Eval::trace(const Position& pos) {
       ss << "\nNNUE evaluation:      " << to_cp(v) << " (white side)\n";
   }
 
-  v = evaluate(pos);
+  v = evaluate(pos,false);
   v = pos.side_to_move() == WHITE ? v : -v;
   ss << "\nFinal evaluation:     " << to_cp(v) << " (white side)\n";
 
