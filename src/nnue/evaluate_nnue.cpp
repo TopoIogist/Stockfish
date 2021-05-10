@@ -129,15 +129,35 @@ namespace Stockfish::Eval::NNUE {
     ASSERT_ALIGNED(transformedFeatures, alignment);
     ASSERT_ALIGNED(buffer, alignment);
 
-    const std::size_t bucket = (popcount(pos.pieces()) - 1) / 4;
+    auto const piece_ct = popcount(pos.pieces());
+    std::size_t bucket = (piece_ct - 1) / 4;
+    const std::size_t next_bucket = (piece_ct + 1 - 1) / 4;
+    const std::size_t lw_bucket = (std::max(2,piece_ct) -1 - 1) / 4;
+    Value vals[2];
 
-    const auto [psqt, lazy] = featureTransformer->transform(pos, transformedFeatures, bucket);
-    if (lazy) {
-      return static_cast<Value>(psqt / OutputScale);
-    } else {
-      const auto output = network[bucket]->propagate(transformedFeatures, buffer);
-      return static_cast<Value>((output[0] + psqt) / OutputScale);
+    for(std::size_t i = 0; i < 2; ++i) {
+        if(i == 1) {
+            if(next_bucket == bucket && lw_bucket == bucket) {
+                vals[1] = vals[0];
+                break;
+            }
+            if(next_bucket != bucket) {
+                bucket = next_bucket;
+            }
+            if(lw_bucket != bucket) {
+                bucket = lw_bucket;
+            }
+        }
+        const auto [psqt, lazy] = featureTransformer->transform(pos, transformedFeatures, bucket);
+        if (lazy) {
+            vals[i] = static_cast<Value>(psqt / OutputScale);
+        } else {
+            const auto output = network[bucket]->propagate(transformedFeatures, buffer);
+            vals[i] = static_cast<Value>((output[0] + psqt) / OutputScale);
+        }
     }
+
+    return (vals[0]+vals[1])/2;
   }
 
   // Load eval, from a file stream or a memory stream
