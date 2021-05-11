@@ -1103,11 +1103,11 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&]()
       {
-          int scale = 959 - 8 * pos.count<PAWN>() + 84 * pos.count<ALL_PIECES>() + 48 * (pos.side_to_move() == BLACK);
+          int scale = 601 - 31 * pos.count<PAWN>() + 102 * pos.count<ALL_PIECES>() - 197 * (pos.side_to_move() == BLACK);
 
           Value net_eval = NNUE::evaluate(pos);
-          Value nnue = net_eval * scale / 2048 + Time.tempoNNUE
-                       - 56 - 13 *(pos.side_to_move() == BLACK) - (231 * (std::min((int)net_eval, -50)))/2048;
+          Value nnue = net_eval * scale / 2048 + Time.tempoNNUE;
+          nnue += (5 + std::min(-50, (int)net_eval)/2 - 7*(pos.side_to_move() == BLACK));
 
           if (pos.is_chess960())
               nnue += fix_FRC(pos);
