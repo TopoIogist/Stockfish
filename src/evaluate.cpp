@@ -1103,7 +1103,7 @@ Value Eval::evaluate(const Position& pos, bool mask_stm) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&]()
       {
-          int scale =  970 + pos.non_pawn_material()/32 + 17*pos.count<PAWN>();
+          int scale =  352 - 28 * pos.count<PAWN>() + 103 * pos.count<ALL_PIECES>();
           Value net_eval;
 
           if((!mask_stm || pos.this_thread()->nodes & 0xB) || pos.side_to_move() == WHITE) {
@@ -1117,7 +1117,7 @@ Value Eval::evaluate(const Position& pos, bool mask_stm) {
               evilHack.undo_null_move();
           }
 
-          Value nnue = net_eval * scale / 1024 + Time.tempoNNUE;
+          Value nnue = net_eval * scale / 2048 - 13 + 884 * std::min((int)net_eval,-13) / 2048 + Time.tempoNNUE;
 
 
           if (pos.is_chess960())

@@ -64,7 +64,7 @@ namespace {
   constexpr uint64_t TtHitAverageWindow     = 4096;
   constexpr uint64_t TtHitAverageResolution = 1024;
 
-  constexpr int ObliviousDepthLimit = 8;
+  constexpr int ObliviousDepthLimit = 12;
 
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
