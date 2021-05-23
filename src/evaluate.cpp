@@ -1044,10 +1044,10 @@ namespace {
 make_v:
     if (pos.morphy) {
         score = Score(50);
-        score += (threats<WHITE>() - threats<BLACK>());
-        score += 3 * (king<   WHITE>() - king<   BLACK>());
-        score += 2 * (space<  WHITE>() - space<  BLACK>());
-        score += 2 * me->imbalance();
+        score += (threats<WHITE>() - threats<BLACK>())/2;
+        score += 1 * (king<   WHITE>() - king<   BLACK>());
+        score += 1 * (space<  WHITE>() - space<  BLACK>());
+        score += 1 * me->imbalance();
         if (type_of(pos.lastMovedPiece) == PAWN && pos.game_ply() >= 3) score += (pos.side_to_move() == WHITE ? -30 : 30);
     }
     // Derive single value from mg and eg parts of score
