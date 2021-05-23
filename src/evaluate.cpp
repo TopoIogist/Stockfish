@@ -1043,7 +1043,7 @@ namespace {
 
 make_v:
     if (pos.morphy) {
-        score = Score(80);
+        score = Score(100);
         score += 2 * (king<   WHITE>() - king<   BLACK>());
         /*score += (threats<WHITE>() - threats<BLACK>());
         score += 2 * (king<   WHITE>() - king<   BLACK>());
@@ -1148,7 +1148,7 @@ Value Eval::evaluate(const Position& pos) {
   pos.morphy = false;
 
   // Damp down the evaluation linearly when shuffling
-  v = v - 20*std::max(pos.rule50_count(),3) + 20*3;
+  v = v * (100 - pos.rule50_count()) / 100;
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
