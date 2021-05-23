@@ -1043,12 +1043,14 @@ namespace {
 
 make_v:
     if (pos.morphy) {
-        score = Score(50);
-        score += (threats<WHITE>() - threats<BLACK>())/2;
-        score += 1 * (king<   WHITE>() - king<   BLACK>());
-        score += 1 * (space<  WHITE>() - space<  BLACK>());
-        score += 1 * me->imbalance();
-        if (type_of(pos.lastMovedPiece) == PAWN && pos.game_ply() >= 3) score += (pos.side_to_move() == WHITE ? -30 : 30);
+        score = Score(80);
+        score += 2 * (king<   WHITE>() - king<   BLACK>());
+        /*score += (threats<WHITE>() - threats<BLACK>());
+        score += 2 * (king<   WHITE>() - king<   BLACK>());
+        score += 2 * (space<  WHITE>() - space<  BLACK>());
+        score += 2 * (mobility[WHITE] - mobility[BLACK]);
+        */
+        if (type_of(pos.lastMovedPiece) == PAWN && pos.game_ply() >= 3) score += (pos.side_to_move() == WHITE ? -50 : 50);
     }
     // Derive single value from mg and eg parts of score
     Value v = winnable(score);
@@ -1121,9 +1123,8 @@ Value Eval::evaluate_orig(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&]()
       {
-         int scale = 903 + 28 * pos.count<PAWN>() + 28 * pos.non_pawn_material() / 1024;
 
-         Value nnue = NNUE::evaluate(pos, true) * scale / 1024;
+         Value nnue = NNUE::evaluate(pos, true);
 
 			if (pos.is_chess960())
 				nnue += fix_FRC(pos);
@@ -1131,30 +1132,7 @@ Value Eval::evaluate_orig(const Position& pos) {
 			return nnue;
 		};
 
-      // If there is PSQ imbalance we use the classical eval. We also introduce
-      // a small probability of using the classical eval when PSQ imbalance is small.
-      Value psq = Value(abs(eg_value(pos.psq_score())));
-      int   r50 = 16 + pos.rule50_count();
-      bool  largePsq = psq * 16 > (NNUEThreshold1 + pos.non_pawn_material() / 64) * r50;
-      bool  classical = largePsq;
-
-		// Use classical evaluation for really low piece endgames.
-		// One critical case is the draw for bishop + A/H file pawn vs naked king.
-		bool lowPieceEndgame = pos.non_pawn_material() == BishopValueMg
-			|| (pos.non_pawn_material() < 2 * RookValueMg && pos.count<PAWN>() < 2);
-
-      v = classical || lowPieceEndgame ? Evaluation<NO_TRACE>(pos).value()
-                                       : adjusted_NNUE();
-
-      // If the classical eval is small and imbalance large, use NNUE nevertheless.
-      // For the case of opposite colored bishops, switch to NNUE eval with small
-      // probability if the classical eval is less than the threshold.
-      if (    largePsq
-          && !lowPieceEndgame
-          && (   abs(v) * 16 < NNUEThreshold2 * r50
-              || (   pos.opposite_bishops()
-                  && abs(v) * 16 < (NNUEThreshold1 + pos.non_pawn_material() / 64) * r50)))
-          v = adjusted_NNUE();
+      v = adjusted_NNUE();
   }
 
 	return v;
